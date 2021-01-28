@@ -1,0 +1,16 @@
+{
+  "name": "boss-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/boss.js",
+  "scripts": {
+    "lint": "./node_modules/.bin/eslint ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "dotenv": "^8.2.0",
+    "eslint": "^7.18.0"
+  }
+}
