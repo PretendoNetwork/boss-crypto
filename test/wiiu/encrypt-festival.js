@@ -1,4 +1,4 @@
-const BOSS = require('..');
+const BOSS = require('../..');
 const fs = require('fs');
 require('dotenv').config();
 
