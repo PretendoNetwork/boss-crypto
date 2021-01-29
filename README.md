@@ -62,9 +62,9 @@ const { BOSS_AES_KEY, BOSS_HMAC_KEY } = process.env;
 
 const encryptedFilePath = __dirname + '/Festival.boss';
 
-const decrypted = BOSS.decrypt(encryptedFilePath, BOSS_AES_KEY, BOSS_HMAC_KEY);
+const { content } = BOSS.decrypt(encryptedFilePath, BOSS_AES_KEY, BOSS_HMAC_KEY);
 
-fs.writeFileSync(__dirname + '/Festival.byml', decrypted);
+fs.writeFileSync(__dirname + '/Festival.byml', content);
 ```
 
 ## Decrypting 3DS BGM file
@@ -78,14 +78,34 @@ const { BOSS_AES_KEY } = process.env;
 
 const encryptedFilePath = __dirname + '/EU_BGM1.boss';
 
-const decrypted = BOSS.decrypt(encryptedFilePath, BOSS_AES_KEY);
+const container = BOSS.decrypt(encryptedFilePath, BOSS_AES_KEY);
 
-fs.writeFileSync(__dirname + '/EU_BGM1.dec', decrypted);
+fs.writeFileSync(__dirname + '/EU_BGM1.dec', container.content);
 ```
 
 
 
 # API
+
+## Container Object
+This is just an object that contains all the relevant data for a BOSS/SpotPass file. It is NOT a real representation of the actual containers found in BOSS
+
+```js
+{
+	release_date: <BigInt>, // Only on 3DS
+	iv: <Buffer>,
+	hash_type: <Number>,
+	hmac: <Buffer>, // Only on WiiU
+	content_header_hash: <Buffer>, // Only on 3DS
+	content_header_hash_signature: <Buffer>, // Only on 3DS
+	payload_content_header_hash: <Buffer>, // Only on 3DS
+	payload_content_header_hash_signature: <Buffer>, // Only on 3DS
+	program_id: <Buffer>, // Only on 3DS (title ID of the title)
+	content_datatype: <Number>, // Only on 3DS
+	ns_data_id: <Number>, // Only on 3DS
+	content: <Buffer>
+}
+```
 
 ## `BOSS.decrypt(pathOrBuffer, aesKey, hmacKey);`
 
@@ -97,7 +117,7 @@ Takes in encrypted BOSS/SpotPass data and decrypts it. This function will check 
 - `hmacKey`: BOSS/SpotPass HMAC key
 
 ### Returns:
-Decrypted content body
+Container Object
 
 
 
@@ -111,7 +131,7 @@ Takes in encrypted BOSS/SpotPass used for the WiiU data and decrypts it. This fu
 - `hmacKey`: BOSS/SpotPass HMAC key
 
 ### Returns:
-Decrypted content body
+Container Object
 
 
 
@@ -126,7 +146,7 @@ Takes in content and encrypts it. Will check `version` to know what version (Wii
 - `hmacKey`: BOSS/SpotPass HMAC key
 
 ### Returns:
-Encrypted BOSS data
+Encrypted BOSS data depending on whatever version was set
 
 
 
@@ -153,4 +173,4 @@ Takes in content and encrypts it for the 3DS
 - `aesKey`: BOSS/SpotPass AES encryption key
 
 ### Returns:
-3DS decrypted BOSS data
+Container Object
