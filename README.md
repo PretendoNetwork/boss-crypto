@@ -19,6 +19,8 @@ npm i https://github.com/PretendoNetwork/boss-js
 
 
 # Dumping crypto keys
+
+## WiiU
 BOSS/SpotPass uses 2 keys:
 - AES encryption key
 - HMAC key
@@ -27,6 +29,8 @@ We cannot provide these keys directly as they are owned by Nintendo. You must du
 
 To dump keys needed see [this key dumping tool](https://github.com/PretendoNetwork/Full_Key_Dumper/)
 
+## 3DS
+Only one key is used to decrypt the contents, the AES encryption key. This is in keyslot 0x38. Other keys are used to check hashes and signatures but we don't have those so those checks are ignored. See [https://citra-emu.org/wiki/aes-keys/](https://citra-emu.org/wiki/aes-keys/) and [https://www.3dbrew.org/wiki/AES_Registers#Keyslots](https://www.3dbrew.org/wiki/AES_Registers#Keyslots) for more information
 
 
 # Example
@@ -61,6 +65,22 @@ const encryptedFilePath = __dirname + '/Festival.boss';
 const decrypted = BOSS.decrypt(encryptedFilePath, BOSS_AES_KEY, BOSS_HMAC_KEY);
 
 fs.writeFileSync(__dirname + '/Festival.byml', decrypted);
+```
+
+## Decrypting 3DS BGM file
+```js
+const BOSS = require('boss-js');
+const fs = require('fs');
+require('dotenv').config();
+
+// PROVIDE THIS KEY YOURSELF
+const { BOSS_AES_KEY } = process.env;
+
+const encryptedFilePath = __dirname + '/EU_BGM1.boss';
+
+const decrypted = BOSS.decrypt(encryptedFilePath, BOSS_AES_KEY);
+
+fs.writeFileSync(__dirname + '/EU_BGM1.dec', decrypted);
 ```
 
 
@@ -121,3 +141,16 @@ Takes in content and encrypts it for the WiiU
 
 ### Returns:
 WiiU encrypted BOSS data
+
+
+
+## `BOSS.decrypt3DS(pathOrBuffer, aesKey);`
+
+Takes in content and encrypts it for the 3DS
+
+### Arguments
+- `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
+- `aesKey`: BOSS/SpotPass AES encryption key
+
+### Returns:
+3DS decrypted BOSS data
