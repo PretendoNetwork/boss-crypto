@@ -13,7 +13,7 @@ npm i https://github.com/PretendoNetwork/boss-js
 ## Supported functionality:
 - [x] Decrypt (WiiU)
 - [x] Encrypt (WiiU)
-- [ ] Decrypt (3DS)
+- [x] Decrypt (3DS) (no hashes or signatures are being verified due to lack of keys)
 - [ ] Encrypt (3DS)
 
 
