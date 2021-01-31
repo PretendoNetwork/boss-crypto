@@ -30,7 +30,7 @@ We cannot provide these keys directly as they are owned by Nintendo. You must du
 To dump keys needed see [this key dumping tool](https://github.com/PretendoNetwork/Full_Key_Dumper/)
 
 ## 3DS
-Only one key is used to decrypt the contents, the AES encryption key. This is in keyslot 0x38. See [https://citra-emu.org/wiki/aes-keys/](https://citra-emu.org/wiki/aes-keys/) and [https://www.3dbrew.org/wiki/AES_Registers#Keyslots](https://www.3dbrew.org/wiki/AES_Registers#Keyslots) for more information. The SHA256 hashes are RSA signed, however we lack both the private and public key. So we cannot sign our own hashes legitimately and we cannot verify legitimate hashes. Luckily Luma patches these signature checks anyway
+Only one key is used to decrypt the contents, the AES encryption key. This is in keyslot 0x38 (Normalkey). See [https://citra-emu.org/wiki/aes-keys/](https://citra-emu.org/wiki/aes-keys/) and [https://www.3dbrew.org/wiki/AES_Registers#Keyslots](https://www.3dbrew.org/wiki/AES_Registers#Keyslots) for more information. The SHA256 hashes are RSA signed, however we lack both the private and public key. So we cannot sign our own hashes legitimately and we cannot verify legitimate hashes. Luckily Luma patches these signature checks anyway
 
 
 # Example
