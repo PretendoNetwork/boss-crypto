@@ -134,7 +134,7 @@ Takes in encrypted BOSS/SpotPass data and decrypts it. This function will check 
 ### Arguments
 - `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
 - `aesKey`: BOSS/SpotPass AES encryption key
-- `hmacKey`: BOSS/SpotPass HMAC key
+- `hmacKey`: BOSS/SpotPass HMAC key (WiiU only)
 
 ### Returns:
 Container Object
