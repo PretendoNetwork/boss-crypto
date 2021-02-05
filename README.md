@@ -1,5 +1,5 @@
 # boss.js
-### Utility lib for working with BOSS/SpotPass data on the WiiU and (eventually) 3DS
+### Utility lib for working with BOSS/SpotPass data on the WiiU and 3DS
 
 
 
