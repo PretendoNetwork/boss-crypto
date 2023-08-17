@@ -1,0 +1,24 @@
+name: Run tests
+on:
+    push:
+        branches: [master, dev]
+    pull_request:
+        branches: [master, dev]
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        env:
+            NODE_ENV: ci
+            BOSS_3DS_AES_KEY: ${{ secrets.BOSS_3DS_AES_KEY }}
+            BOSS_WIIU_AES_KEY: ${{ secrets.BOSS_WIIU_AES_KEY }}
+            BOSS_WIIU_HMAC_KEY: ${{ secrets.BOSS_WIIU_HMAC_KEY }}
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                node-version: 18
+                registry-url: 'https://registry.npmjs.org'
+            - run: npm ci
+            - name: Building
+              run: npm run build
+            - run: npm test

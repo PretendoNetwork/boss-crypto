@@ -1,14 +1,10 @@
-# boss.js
-### Utility lib for working with BOSS/SpotPass data on the WiiU and 3DS
-
-
+# boss-crypto
+### TypeScript crypto functions for creating and working with WiiU and 3DS BOSS (SpotPass) files
 
 ## Installation
 ```
-npm i https://github.com/PretendoNetwork/boss-js
+npm i @pretendonetwork/boss-crypto
 ```
-
-
 
 ## Supported functionality:
 - [x] Decrypt (WiiU)
@@ -16,12 +12,10 @@ npm i https://github.com/PretendoNetwork/boss-js
 - [x] Decrypt (3DS) (RSA hash signatures are not verified due to lack of public key)
 - [x] Encrypt (3DS)
 
-
-
 # Dumping crypto keys
 
 ## WiiU
-BOSS/SpotPass uses 2 keys:
+BOSS uses 2 keys:
 - AES encryption key
 - HMAC key
 
@@ -33,188 +27,218 @@ To dump keys needed see [this key dumping tool](https://github.com/PretendoNetwo
 Only one key is used to decrypt the contents, the AES encryption key. This is in keyslot 0x38 (Normalkey). See [https://citra-emu.org/wiki/aes-keys/](https://citra-emu.org/wiki/aes-keys/) and [https://www.3dbrew.org/wiki/AES_Registers#Keyslots](https://www.3dbrew.org/wiki/AES_Registers#Keyslots) for more information. The SHA256 hashes are RSA signed, however we lack both the private and public key. So we cannot sign our own hashes legitimately and we cannot verify legitimate hashes. Luckily Luma patches these signature checks anyway
 
 
-# Example
-## Encrypting Splatoon Splatfest file
-```js
-const BOSS = require('boss-js');
-const fs = require('fs');
-require('dotenv').config();
+# Usage
+## Encryption WiiU
+```ts
+import fs from 'node:fs';
+import { encryptWiiU } from '@pretendonetwork/boss-crypto';
 
-// PROVIDE THESE KEYS YOURSELF
 const { BOSS_AES_KEY, BOSS_HMAC_KEY } = process.env;
 
-const decryptedFilePath = __dirname + '/Festival.byml';
-
-// Can also use BOSS.encrypt(decryptedFilePath, 0x20001, BOSS_AES_KEY, BOSS_HMAC_KEY);
-const encrypted = BOSS.encryptWiiU(decryptedFilePath, BOSS_AES_KEY, BOSS_HMAC_KEY);
+const content = Buffer.from('Hello World');
+const encrypted = encryptWiiU(content, BOSS_WIIU_AES_KEY, BOSS_WIIU_HMAC_KEY);
 
 fs.writeFileSync(__dirname + '/Festival.boss', encrypted);
 ```
 
-## Decrypting Splatoon Splatfest file
-```js
-const BOSS = require('boss-js');
-const fs = require('fs');
-require('dotenv').config();
+## Decryption WiiU
+```ts
+import fs from 'node:fs';
+import { decryptWiiU } from '@pretendonetwork/boss-crypto';
 
-// PROVIDE THESE KEYS YOURSELF
 const { BOSS_AES_KEY, BOSS_HMAC_KEY } = process.env;
 
 const encryptedFilePath = __dirname + '/Festival.boss';
 
-const { content } = BOSS.decrypt(encryptedFilePath, BOSS_AES_KEY, BOSS_HMAC_KEY);
+const { content } = decryptWiiU(encryptedFilePath, BOSS_AES_KEY, BOSS_HMAC_KEY);
 
 fs.writeFileSync(__dirname + '/Festival.byml', content);
 ```
 
-## Decrypting 3DS BGM file
-```js
-const BOSS = require('boss-js');
-const fs = require('fs');
-require('dotenv').config();
+## Encryption 3DS
+```ts
+import fs from 'node:fs';
+import { encrypt3DS } from '@pretendonetwork/boss-crypto';
 
-// PROVIDE THIS KEY YOURSELF
+const { BOSS_AES_KEY } = process.env;
+
+const content = Buffer.from('Hello World');
+const encrypted = encrypt3DS(content, BOSS_3DS_AES_KEY, {
+	program_id: 0x0004001000022900, // can also be named "title_id"
+	content_datatype: 65537,
+	release_date: 1692231927n,
+	ns_data_id: 36,
+});
+
+fs.writeFileSync(__dirname + '/hello-world.boss', encrypted);
+```
+
+## Decryption 3DS
+```ts
+import fs from 'node:fs';
+import { decrypt3DS } from '@pretendonetwork/boss-crypto';
+
 const { BOSS_AES_KEY } = process.env;
 
 const encryptedFilePath = __dirname + '/EU_BGM1';
 
-const container = BOSS.decrypt(encryptedFilePath, BOSS_AES_KEY);
+const { content } = decrypt3DS(encryptedFilePath, BOSS_AES_KEY);
 
-fs.writeFileSync(__dirname + '/EU_BGM1.dec', container.content);
+fs.writeFileSync(__dirname + '/EU_BGM1.dec', content);
 ```
-
-## Encrypting 3DS BGM file
-```js
-const BOSS = require('boss-js');
-const fs = require('fs');
-require('dotenv').config();
-
-// PROVIDE THIS KEY YOURSELF
-const { BOSS_AES_KEY } = process.env;
-
-const encryptedFilePath = __dirname + '/EU_BGM1.dec';
-
-const encrypted = BOSS.encrypt3DS(encryptedFilePath, BOSS_AES_KEY, {
-	program_id: 0x0004001000022900,
-	content_datatype: 65537,
-	ns_data_id: 36,
-});
-
-fs.writeFileSync(__dirname + '/EU_BGM1.boss', encrypted);
-```
-
-
 
 # API
 
-## Container Object
-This is just an object that contains all the relevant data for a BOSS/SpotPass file. It is NOT a real representation of the actual containers found in BOSS
+## Types
 
-```js
-{
-	release_date: <BigInt>, // Only on 3DS
-	iv: <Buffer>,
-	hash_type: <Number>,
-	hmac: <Buffer>, // Only on WiiU
-	content_header_hash: <Buffer>, // Only on 3DS
-	content_header_hash_signature: <Buffer>, // Only on 3DS
-	payload_content_header_hash: <Buffer>, // Only on 3DS
-	payload_content_header_hash_signature: <Buffer>, // Only on 3DS
-	program_id: <Buffer>, // Only on 3DS (title ID of the title)
-	content_datatype: <Number>, // Only on 3DS
-	ns_data_id: <Number>, // Only on 3DS
-	content: <Buffer>
+### WUPBOSSInfo
+
+Returned when decrypting WiiU BOSS content. Contains some crypto information from the headers
+
+_**THIS TYPE IS <ins>NOT</ins> PART OF THE REAL BOSS SPEC. IT IS MADE FOR THIS LIBRARY ONLY**_
+
+```ts
+type WUPBOSSInfo = {
+	hash_type: number;
+	iv: Buffer;
+	hmac: Buffer;
+	content: Buffer;
 }
 ```
 
-## `BOSS.decrypt(pathOrBuffer, aesKey, hmacKey);`
+### CTRBOSSContainer
+Returned when decrypting 3DS BOSS content. Contains all relevant data from the real BOSS container. See https://www.3dbrew.org/wiki/SpotPass#Content_Container for more details
 
-Takes in encrypted BOSS/SpotPass data and decrypts it. This function will check the BOSS header to see what version (WiiU or 3DS) the file is for and automatically call the corresponding decryption function
+```ts
+type CTRBOSSContainer = {
+	hash_type: number;
+	release_date: bigint;
+	iv: Buffer;
+	content_header_hash: Buffer;
+	content_header_hash_signature: Buffer;
+	payload_content_header_hash: Buffer;
+	payload_content_header_hash_signature: Buffer;
+	program_id: bigint;
+	content_datatype: number;
+	ns_data_id: number;
+	content: Buffer;
+}
+```
+
+### CTRCryptoOptions
+
+Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set
+
+```ts
+type CTRCryptoOptions = {
+	program_id?: string | number | bigint;
+	title_id?: string | number | bigint;
+	release_date: bigint;
+	content_datatype: number;
+	ns_data_id: number;
+}
+```
+
+## Methods
+
+## decrypt
+
+### Signature
+```ts
+function decrypt(pathOrBuffer: string | Buffer, aesKey: string, hmacKey?: string): WUPBOSSInfo | CTRBOSSContainer
+```
+
+Takes in encrypted BOSS data and decrypts it. This function will check the BOSS header to see what version (WiiU or 3DS) the file is for and automatically call the corresponding decryption function
 
 ### Arguments
 - `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
-- `aesKey`: BOSS/SpotPass AES encryption key
-- `hmacKey`: BOSS/SpotPass HMAC key (WiiU only)
+- `aesKey`: AES encryption key
+- `hmacKey`: HMAC key (WiiU only)
 
 ### Returns:
-Container Object
+`WUPBOSSInfo | CTRBOSSContainer`
 
+## encrypt
 
-
-## `BOSS.encrypt(pathOrBuffer, version, aesKey, hmacKeyOrOptions);`
+### Signature
+```ts
+function encrypt(pathOrBuffer: string | Buffer, version: number, aesKey: string, hmacKeyOrOptions: string | CTRCryptoOptions): Buffer
+```
 
 Takes in content and encrypts it. Will check `version` to know what version (WiiU or 3DS) the file is for and automatically call the corresponding encryption function
 
 ### Arguments
 - `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
-- `version`: BOSS/SpotPass version number (`0x10001` = 3DS, `0x20001` = WiiU)
-- `aesKey`: BOSS/SpotPass AES encryption key
-- `hmacKeyOrOptions`: BOSS/SpotPass HMAC key (WiiU) or content options (3DS)
+- `version`: BOSS version number (`0x10001` = 3DS, `0x20001` = WiiU)
+- `aesKey`: BOSS AES encryption key
+- `hmacKeyOrOptions`: BOSS HMAC key (WiiU) or `CTRCryptoOptions` (3DS)
 
 ### Returns:
-Encrypted BOSS data depending on whatever version was set
+Encrypted BOSS data buffer
 
+## decryptWiiU
 
+### Signature
+```ts
+function decryptWiiU(pathOrBuffer: string | Buffer, aesKey: string, hmacKey: string): WUPBOSSInfo
+```
 
-## `BOSS.decryptWiiU(pathOrBuffer, aesKey, hmacKey);`
-
-Takes in encrypted BOSS/SpotPass used for the WiiU data and decrypts it. This function is usually not needed and is called internally by `BOSS.decrypt`
+Takes in encrypted BOSS used for the WiiU data and decrypts it. This function is usually not needed and is called internally by `decrypt`
 
 ### Arguments
 - `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
-- `aesKey`: BOSS/SpotPass AES encryption key
-- `hmacKey`: BOSS/SpotPass HMAC key
+- `aesKey`: BOSS AES encryption key
+- `hmacKey`: BOSS HMAC key
 
 ### Returns:
-Container Object
+`WUPBOSSInfo`
 
+## encryptWiiU
 
-
-## `BOSS.encryptWiiU(pathOrBuffer, aesKey, hmacKey);`
+### Signature
+```ts
+function encryptWiiU(pathOrBuffer: string | Buffer, aesKey: string, hmacKey: string): Buffer
+```
 
 Takes in content and encrypts it for the WiiU
 
 ### Arguments
 - `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
-- `aesKey`: BOSS/SpotPass AES encryption key
-- `hmacKey`: BOSS/SpotPass HMAC key
+- `aesKey`: BOSS AES encryption key
+- `hmacKey`: BOSS HMAC key
 
 ### Returns:
 WiiU encrypted BOSS data
 
+## decrypt3DS
 
+### Signature
+```ts
+function decrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffer): CTRBOSSContainer
+```
 
-## `BOSS.decrypt3DS(pathOrBuffer, aesKey);`
-
-Takes in encrypted BOSS/SpotPass used for the 3DS data and decrypts it. This function is usually not needed and is called internally by `BOSS.decrypt`
+Takes in encrypted BOSS used for the 3DS data and decrypts it. This function is usually not needed and is called internally by `decrypt`
 
 ### Arguments
 - `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
-- `aesKey`: BOSS/SpotPass AES encryption key
+- `aesKey`: BOSS AES encryption key
 
 ### Returns:
-Container Object
+`CTRBOSSContainer`
 
+## encrypt3DS
 
-
-## `BOSS.encrypt3DS(pathOrBuffer, aesKey, options);`
+### Signature
+```ts
+function encrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffer, options: CTRCryptoOptions): Buffer
+```
 
 Takes in content and encrypts it for the 3DS using the provided options
 
 ### Arguments
 - `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
-- `aesKey`: BOSS/SpotPass AES encryption key
-- `options`: Content options object. The 3DS contains more data in it's SpotPass files than the WiiU so we pass that data here
-
-### Content options
-```js
-{
-	program_id: <String> || <Number> || <BigInt>, // The title ID of the title the content is for (named program_id to stay in line with the wiki)
-	title_id: <String> || <Number> || <BigInt>, // alias for program_id
-	content_datatype: <Number>, // From the wiki: used for filtering with BOSSU:GetNsDataIdList. Usually 0x10001? (observed 0x20001 in eShop strings)
-	ns_data_id: <Number>, // From the wiki: NsDataId, used for generating the extdata filepath
-}
-```
+- `aesKey`: BOSS AES encryption key
+- `options`: `CTRCryptoOptions`
 
 ### Returns:
-Container Object
+3DS encrypted BOSS data

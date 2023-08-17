@@ -56,3 +56,12 @@ typings/
 
 # dotenv environment variables file
 .env
+
+# custom
+dist
+
+# act GitHub Actions tester
+.secrets
+
+# Jons private tests
+test

@@ -1,5 +1,12 @@
-const crypto = require('crypto');
-const { md5, getDataFromPathOrBuffer } = require('./util');
+import crypto from 'node:crypto';
+import { md5, getDataFromPathOrBuffer } from '@/util';
+
+export type WUPBOSSInfo = {
+	hash_type: number;
+	iv: Buffer;
+	hmac: Buffer;
+	content: Buffer;
+}
 
 const BOSS_WUP_VER = 0x20001;
 
@@ -7,7 +14,7 @@ const BOSS_WUP_VER = 0x20001;
 const BOSS_AES_KEY_HASH = Buffer.from('5202ce5099232c3d365e28379790a919', 'hex');
 const BOSS_HMAC_KEY_HASH = Buffer.from('b4482fef177b0100090ce0dbeb8ce977', 'hex');
 
-function verifyKeys(aesKey, hmacKey) {
+function verifyKeys(aesKey: string, hmacKey: string): void {
 	if (!BOSS_AES_KEY_HASH.equals(md5(aesKey))) {
 		throw new Error('Invalid BOSS AES key');
 	}
@@ -17,7 +24,7 @@ function verifyKeys(aesKey, hmacKey) {
 	}
 }
 
-function decryptWiiU(pathOrBuffer, aesKey, hmacKey) {
+export function decryptWiiU(pathOrBuffer: string | Buffer, aesKey: string, hmacKey: string): WUPBOSSInfo {
 	verifyKeys(aesKey, hmacKey);
 
 	const data = getDataFromPathOrBuffer(pathOrBuffer);
@@ -48,17 +55,15 @@ function decryptWiiU(pathOrBuffer, aesKey, hmacKey) {
 		throw new Error('Content HMAC check failed');
 	}
 
-	const container = {
+	return {
 		hash_type: hashType,
 		iv: IV,
 		hmac,
 		content
 	};
-
-	return container;
 }
 
-function encryptWiiU(pathOrBuffer, aesKey, hmacKey) {
+export function encryptWiiU(pathOrBuffer: string | Buffer, aesKey: string, hmacKey: string): Buffer {
 	verifyKeys(aesKey, hmacKey);
 
 	const content = getDataFromPathOrBuffer(pathOrBuffer);
@@ -69,7 +74,7 @@ function encryptWiiU(pathOrBuffer, aesKey, hmacKey) {
 
 	const decrypted = Buffer.concat([hmac, content]);
 
-	const IV = crypto.randomBytes(12);
+	const IV = process.env.NODE_ENV === 'test' ? Buffer.alloc(12) : crypto.randomBytes(12);
 
 	const cipher = crypto.createCipheriv('aes-128-ctr', aesKey, Buffer.concat([IV, Buffer.from('\x00\x00\x00\x01')]));
 
@@ -79,16 +84,12 @@ function encryptWiiU(pathOrBuffer, aesKey, hmacKey) {
 
 	header.write('boss', 0);
 	header.writeUInt32BE(BOSS_WUP_VER, 0x4);
-	header.writeUInt16BE(1, 0x8); // always 1
-	header.writeUInt16BE(2, 0xA); // hash version
+	header.writeUInt16BE(1, 0x8); // * Always 1
+	header.writeUInt16BE(2, 0xA); // * Hash version
+
 	IV.copy(header, 0xC);
 
 	return Buffer.concat([
 		header, encrypted
 	]);
 }
-
-module.exports = {
-	decryptWiiU,
-	encryptWiiU
-};
