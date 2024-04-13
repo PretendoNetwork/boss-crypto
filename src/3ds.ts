@@ -1,26 +1,34 @@
 import crypto from 'node:crypto';
 import { md5, getDataFromPathOrBuffer } from '@/util';
 
-export type CTRBOSSContainer = {
-	hash_type: number;
-	release_date: bigint;
-	iv: Buffer;
-	content_header_hash: Buffer;
-	content_header_hash_signature: Buffer;
+export type CTRPayloadContent = {
 	payload_content_header_hash: Buffer;
 	payload_content_header_hash_signature: Buffer;
 	program_id: bigint;
 	content_datatype: number;
 	ns_data_id: number;
+	version: number;
 	content: Buffer;
+}
+
+export type CTRBOSSContainer = {
+	hash_type: number;
+	// TODO - This isn't a release date! See https://www.3dbrew.org/wiki/SpotPass#BOSS_Header
+	release_date: bigint;
+	iv: Buffer;
+	content_header_hash: Buffer;
+	content_header_hash_signature: Buffer;
+	payload_contents: CTRPayloadContent[];
 }
 
 export type CTRCryptoOptions = {
 	program_id?: string | number | bigint; // * Program ID and title ID are aliases
 	title_id?: string | number | bigint;   // * Program ID and title ID are aliases
+	// TODO - This isn't a release date! See https://www.3dbrew.org/wiki/SpotPass#BOSS_Header
 	release_date: bigint;
 	content_datatype: number;
 	ns_data_id: number;
+	version: number;
 }
 
 const BOSS_CTR_VER = 0x10001;
@@ -73,6 +81,8 @@ export function decrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffe
 		//throw new Error('Failed to decrypt. Missing content header magic');
 	}
 
+	const payloadsCount = contentHeader.readUInt16BE(0x10);
+
 	const contentHeaderHash = contentHeader.subarray(0x12, 0x32);
 	const contentHeaderHashSignature = contentHeader.subarray(0x32, 0x132);
 
@@ -86,31 +96,51 @@ export function decrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffe
 		throw new Error('Content header SHA256 hash did not match');
 	}
 
-	// * PARSE THE PAYLOAD CONTENT HEADER
-	const payloadContentHeader = decryptedContent.subarray(0x132, 0x26E);
-	const programID = payloadContentHeader.readBigUInt64LE(); // * This is the app title ID, the wiki calls it the "program ID"
-	const contentDataType = payloadContentHeader.readUInt32BE(0xC);
-	const contentLength = payloadContentHeader.readUInt32BE(0x10);
-	const nsDataID = payloadContentHeader.readUInt32BE(0x14);
-	const payloadContentHeaderHash = payloadContentHeader.subarray(0x1C, 0x3C);
-	const payloadContentHeaderHashSignature = payloadContentHeader.subarray(0x3C, 0x13C);
+	const payloads: CTRPayloadContent[] = [];
+	const payloadContents = decryptedContent.subarray(0x132);
+	let payloadContentsOffset = 0;
+	for (let i = 0; i < payloadsCount; i++) {
+		// * PARSE THE PAYLOAD CONTENT HEADER
+		const payloadContentHeader = payloadContents.subarray(payloadContentsOffset, payloadContentsOffset + 0x13C);
+		const programID = payloadContentHeader.readBigUInt64LE(); // * This is the app title ID, the wiki calls it the "program ID"
+		const contentDataType = payloadContentHeader.readUInt32BE(0xC);
+		const contentLength = payloadContentHeader.readUInt32BE(0x10);
+		const nsDataID = payloadContentHeader.readUInt32BE(0x14);
+		const version = payloadContentHeader.readUInt32BE(0x18);
+		const payloadContentHeaderHash = payloadContentHeader.subarray(0x1C, 0x3C);
+		const payloadContentHeaderHashSignature = payloadContentHeader.subarray(0x3C, 0x13C);
 
-	const content = decryptedContent.subarray(0x26E);
+		const content = payloadContents.subarray(payloadContentsOffset + 0x13C, payloadContentsOffset + 0x13C + contentLength);
 
-	const payloadContentHeaderHashedData = Buffer.concat([
-		payloadContentHeader.subarray(0, 0x1C),
-		Buffer.from('\x00\x00'),
-		content
-	]);
-	const calculatedPayloadContentHeaderHash = crypto.createHash('sha256').update(payloadContentHeaderHashedData).digest();
+		const payloadContentHeaderHashedData = Buffer.concat([
+			payloadContentHeader.subarray(0, 0x1C),
+			Buffer.from('\x00\x00'),
+			content
+		]);
+		const calculatedPayloadContentHeaderHash = crypto.createHash('sha256').update(payloadContentHeaderHashedData).digest();
 
-	if (!calculatedPayloadContentHeaderHash.equals(payloadContentHeaderHash)) {
-		throw new Error('Payload content header SHA256 hash did not match');
+		if (!calculatedPayloadContentHeaderHash.equals(payloadContentHeaderHash)) {
+			throw new Error('Payload content header SHA256 hash did not match');
+		}
+
+		if (contentLength !== content.length) {
+			throw new Error('Content length does not match header');
+		}
+
+		payloads.push({
+			payload_content_header_hash: payloadContentHeaderHash,
+			payload_content_header_hash_signature: payloadContentHeaderHashSignature,
+			program_id: programID,
+			content_datatype: contentDataType,
+			ns_data_id: nsDataID,
+			version,
+			content
+		});
+
+		payloadContentsOffset += 0x13C + contentLength;
 	}
 
-	if (contentLength !== content.length) {
-		throw new Error('Content length does not match header');
-	}
+
 
 	// * We don't do any RSA signature verification because we don't have the public key
 
@@ -120,12 +150,7 @@ export function decrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffe
 		iv: IV,
 		content_header_hash: contentHeaderHash,
 		content_header_hash_signature: contentHeaderHashSignature,
-		payload_content_header_hash: payloadContentHeaderHash,
-		payload_content_header_hash_signature: payloadContentHeaderHashSignature,
-		program_id: programID,
-		content_datatype: contentDataType,
-		ns_data_id: nsDataID,
-		content
+		payload_contents: payloads,
 	};
 }
 
@@ -159,7 +184,7 @@ export function encrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffe
 	let contentHeader = Buffer.alloc(0x12);
 
 	CONTENT_HEADER_MAGIC.copy(contentHeader, 0);
-	contentHeader.writeUInt16BE(0x1, 0x10); // * 3dbrew says "Used for generating the extdata filepath" but I'm not sure how it's used exactly
+	contentHeader.writeUInt16BE(0x1, 0x10); // * Payload contents count
 
 	const contentHeaderHashedData = Buffer.concat([
 		contentHeader,
@@ -179,7 +204,7 @@ export function encrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffe
 	payloadContentHeader.writeUInt32BE(options.content_datatype, 0xC);
 	payloadContentHeader.writeUInt32BE(content.length, 0x10);
 	payloadContentHeader.writeUInt32BE(options.ns_data_id, 0x14);
-	payloadContentHeader.writeUInt32BE(1, 0x18); // Unknown
+	payloadContentHeader.writeUInt32BE(options.version, 0x18);
 
 	const payloadContentHeaderHashedData = Buffer.concat([
 		payloadContentHeader,

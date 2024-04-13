@@ -82,9 +82,9 @@ const { BOSS_AES_KEY } = process.env;
 
 const encryptedFilePath = __dirname + '/EU_BGM1';
 
-const { content } = decrypt3DS(encryptedFilePath, BOSS_AES_KEY);
+const { payload_contents } = decrypt3DS(encryptedFilePath, BOSS_AES_KEY);
 
-fs.writeFileSync(__dirname + '/EU_BGM1.dec', content);
+fs.writeFileSync(__dirname + '/EU_BGM1.dec', payload_contents[0].content);
 ```
 
 # API
@@ -106,6 +106,21 @@ type WUPBOSSInfo = {
 }
 ```
 
+### CTRPayloadContent
+Holds the contents of one of the payloads of a 3DS BOSS container
+
+```ts
+type CTRPayloadContent = {
+	payload_content_header_hash: Buffer;
+	payload_content_header_hash_signature: Buffer;
+	program_id: bigint;
+	content_datatype: number;
+	ns_data_id: number;
+	version: number;
+	content: Buffer;
+}
+```
+
 ### CTRBOSSContainer
 Returned when decrypting 3DS BOSS content. Contains all relevant data from the real BOSS container. See https://www.3dbrew.org/wiki/SpotPass#Content_Container for more details
 
@@ -116,17 +131,11 @@ type CTRBOSSContainer = {
 	iv: Buffer;
 	content_header_hash: Buffer;
 	content_header_hash_signature: Buffer;
-	payload_content_header_hash: Buffer;
-	payload_content_header_hash_signature: Buffer;
-	program_id: bigint;
-	content_datatype: number;
-	ns_data_id: number;
-	content: Buffer;
+	payload_contents: CTRPayloadContent[];
 }
 ```
 
 ### CTRCryptoOptions
-
 Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set
 
 ```ts
@@ -136,6 +145,7 @@ type CTRCryptoOptions = {
 	release_date: bigint;
 	content_datatype: number;
 	ns_data_id: number;
+	version: number;
 }
 ```
 

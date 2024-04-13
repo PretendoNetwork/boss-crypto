@@ -57,6 +57,7 @@ const encrypted = encrypt3DS(content, BOSS_3DS_AES_KEY, {
 	content_datatype: 65537,
 	release_date: 1692231927n,
 	ns_data_id: 36,
+	version: 1,
 });
 
 assert.ok(expected.equals(encrypted), `Invalid encrypted data. Expected\n\n${expected.toString('hex')}\n\nGot\n\n${encrypted.toString('hex')}`);
