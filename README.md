@@ -63,11 +63,12 @@ import { encrypt3DS } from '@pretendonetwork/boss-crypto';
 const { BOSS_AES_KEY } = process.env;
 
 const content = Buffer.from('Hello World');
-const encrypted = encrypt3DS(content, BOSS_3DS_AES_KEY, {
+const encrypted = encrypt3DS(BOSS_3DS_AES_KEY, 1692231927n, {
 	program_id: 0x0004001000022900, // can also be named "title_id"
 	content_datatype: 65537,
-	release_date: 1692231927n,
 	ns_data_id: 36,
+	version: 1,
+	path_or_buffer: content,
 });
 
 fs.writeFileSync(__dirname + '/hello-world.boss', encrypted);
