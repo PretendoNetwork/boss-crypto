@@ -7,7 +7,7 @@ const { BOSS_3DS_AES_KEY } = process.env;
 
 const expected = {
 	hash_type: 2,
-	release_date: 1692231927n,
+	serial_number: 1692231927n,
 	iv: Buffer.from('00000000000000000000000000000001', 'hex'),
 	content_header_hash: Buffer.from('5cd5d8198b7ce64edc796c147f333a76c3714269066504c9232f28cabe4306db', 'hex'),
 	content_header_hash_signature: Buffer.from('00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'hex'),
@@ -69,7 +69,7 @@ const encrypted = Buffer.from([
 const decrypted = decrypt3DS(encrypted, BOSS_3DS_AES_KEY);
 
 assert.equal(decrypted.hash_type, expected.hash_type, `Decrypted hash type does not match. Expected ${expected.hash_type}. Got ${decrypted.hash_type}`);
-assert.equal(decrypted.release_date, expected.release_date, `Decrypted release date does not match. Expected ${expected.release_date}. Got ${decrypted.release_date}`);
+assert.equal(decrypted.serial_number, expected.serial_number, `Decrypted serial number does not match. Expected ${expected.serial_number}. Got ${decrypted.serial_number}`);
 assert.ok(expected.iv.equals(decrypted.iv), `Invalid IV. Expected\n\n${expected.iv.toString('hex')}\n\nGot\n\n${decrypted.iv.toString('hex')}`);
 assert.ok(expected.content_header_hash.equals(decrypted.content_header_hash), `Invalid content header hash. Expected\n\n${expected.content_header_hash.toString('hex')}\n\nGot\n\n${decrypted.content_header_hash.toString('hex')}`);
 assert.ok(expected.content_header_hash_signature.equals(decrypted.content_header_hash_signature), `Invalid content header hash signature. Expected\n\n${expected.content_header_hash_signature.toString('hex')}\n\nGot\n\n${decrypted.content_header_hash_signature.toString('hex')}`);

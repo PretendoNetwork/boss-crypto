@@ -136,16 +136,17 @@ type CTRBOSSContainer = {
 ```
 
 ### CTRCryptoOptions
-Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set
+Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `release_date` is only needed when calling `encrypt`. `path_or_buffer` is only needed when calling `encrypt3DS`.
 
 ```ts
 type CTRCryptoOptions = {
 	program_id?: string | number | bigint;
 	title_id?: string | number | bigint;
-	release_date: bigint;
+	release_date?: bigint;
 	content_datatype: number;
 	ns_data_id: number;
 	version: number;
+	path_or_buffer?: string | Buffer;
 }
 ```
 
@@ -240,15 +241,15 @@ Takes in encrypted BOSS used for the 3DS data and decrypts it. This function is 
 
 ### Signature
 ```ts
-function encrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffer, options: CTRCryptoOptions): Buffer
+function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, options: CTRCryptoOptions[]): Buffer
 ```
 
-Takes in content and encrypts it for the 3DS using the provided options
+Takes in multiple contents and encrypts them for the 3DS using the provided options and serial number
 
 ### Arguments
-- `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
 - `aesKey`: BOSS AES encryption key
-- `options`: `CTRCryptoOptions`
+- `serialNumber`: Serial number used in the BOSS container
+- `options`: Array of `CTRCryptoOptions`
 
 ### Returns:
 3DS encrypted BOSS data
