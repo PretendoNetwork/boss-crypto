@@ -29,7 +29,7 @@ export function encrypt(pathOrBuffer: string | Buffer, version: number, aesKey: 
 			throw new Error('Serial number is undefined');
 		}
 
-		hmacKeyOrOptions.path_or_buffer = data;
+		hmacKeyOrOptions.content = data;
 		return encrypt3DS(aesKey, hmacKeyOrOptions.serial_number, [hmacKeyOrOptions]);
 	} else {
 		throw new Error('Unknown version');

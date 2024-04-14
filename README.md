@@ -68,7 +68,7 @@ const encrypted = encrypt3DS(BOSS_3DS_AES_KEY, 1692231927n, {
 	content_datatype: 65537,
 	ns_data_id: 36,
 	version: 1,
-	path_or_buffer: content,
+	content,
 });
 
 fs.writeFileSync(__dirname + '/hello-world.boss', encrypted);
@@ -137,7 +137,7 @@ type CTRBOSSContainer = {
 ```
 
 ### CTRCryptoOptions
-Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `release_date` is only needed when calling `encrypt`. `path_or_buffer` is only needed when calling `encrypt3DS`.
+Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `release_date` is only needed when calling `encrypt`. `content` is only needed when calling `encrypt3DS`.
 
 ```ts
 type CTRCryptoOptions = {
@@ -147,7 +147,7 @@ type CTRCryptoOptions = {
 	content_datatype: number;
 	ns_data_id: number;
 	version: number;
-	path_or_buffer?: string | Buffer;
+	content?: string | Buffer;
 }
 ```
 

@@ -27,7 +27,7 @@ export type CTRCryptoOptions = {
 	content_datatype: number;
 	ns_data_id: number;
 	version: number;
-	path_or_buffer?: string | Buffer; // * Not needed in boss.encrypt()
+	content?: string | Buffer; // * Not needed in boss.encrypt()
 }
 
 const BOSS_CTR_VER = 0x10001;
@@ -160,10 +160,10 @@ export function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, option
 	const payloadCount = options.length;
 	let payloadContents: Buffer = Buffer.alloc(0);
 	options.forEach((option: CTRCryptoOptions) => {
-		if (typeof option.path_or_buffer === 'undefined') {
+		if (typeof option.content === 'undefined') {
 			throw new Error('No path_or_buffer set');
 		}
-		const content = getDataFromPathOrBuffer(option.path_or_buffer);
+		const content = getDataFromPathOrBuffer(option.content);
 
 		let programID: string | number | bigint;
 
