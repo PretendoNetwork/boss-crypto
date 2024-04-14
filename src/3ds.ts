@@ -161,7 +161,7 @@ export function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, option
 	let payloadContents: Buffer = Buffer.alloc(0);
 	options.forEach((option: CTRCryptoOptions) => {
 		if (typeof option.content === 'undefined') {
-			throw new Error('No path_or_buffer set');
+			throw new Error('No content was set');
 		}
 		const content = getDataFromPathOrBuffer(option.content);
 
