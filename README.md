@@ -63,11 +63,12 @@ import { encrypt3DS } from '@pretendonetwork/boss-crypto';
 const { BOSS_AES_KEY } = process.env;
 
 const content = Buffer.from('Hello World');
-const encrypted = encrypt3DS(content, BOSS_3DS_AES_KEY, {
+const encrypted = encrypt3DS(BOSS_3DS_AES_KEY, 1692231927n, {
 	program_id: 0x0004001000022900, // can also be named "title_id"
 	content_datatype: 65537,
-	release_date: 1692231927n,
 	ns_data_id: 36,
+	version: 1,
+	content,
 });
 
 fs.writeFileSync(__dirname + '/hello-world.boss', encrypted);
@@ -82,9 +83,9 @@ const { BOSS_AES_KEY } = process.env;
 
 const encryptedFilePath = __dirname + '/EU_BGM1';
 
-const { content } = decrypt3DS(encryptedFilePath, BOSS_AES_KEY);
+const { payload_contents } = decrypt3DS(encryptedFilePath, BOSS_AES_KEY);
 
-fs.writeFileSync(__dirname + '/EU_BGM1.dec', content);
+fs.writeFileSync(__dirname + '/EU_BGM1.dec', payload_contents[0].content);
 ```
 
 # API
@@ -106,6 +107,21 @@ type WUPBOSSInfo = {
 }
 ```
 
+### CTRPayloadContent
+Holds the contents of one of the payloads of a 3DS BOSS container
+
+```ts
+type CTRPayloadContent = {
+	payload_content_header_hash: Buffer;
+	payload_content_header_hash_signature: Buffer;
+	program_id: bigint;
+	content_datatype: number;
+	ns_data_id: number;
+	version: number;
+	content: Buffer;
+}
+```
+
 ### CTRBOSSContainer
 Returned when decrypting 3DS BOSS content. Contains all relevant data from the real BOSS container. See https://www.3dbrew.org/wiki/SpotPass#Content_Container for more details
 
@@ -116,26 +132,22 @@ type CTRBOSSContainer = {
 	iv: Buffer;
 	content_header_hash: Buffer;
 	content_header_hash_signature: Buffer;
-	payload_content_header_hash: Buffer;
-	payload_content_header_hash_signature: Buffer;
-	program_id: bigint;
-	content_datatype: number;
-	ns_data_id: number;
-	content: Buffer;
+	payload_contents: CTRPayloadContent[];
 }
 ```
 
 ### CTRCryptoOptions
-
-Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set
+Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `release_date` is only needed when calling `encrypt`. `content` is only needed when calling `encrypt3DS`.
 
 ```ts
 type CTRCryptoOptions = {
 	program_id?: string | number | bigint;
 	title_id?: string | number | bigint;
-	release_date: bigint;
+	release_date?: bigint;
 	content_datatype: number;
 	ns_data_id: number;
+	version: number;
+	content?: string | Buffer;
 }
 ```
 
@@ -230,15 +242,15 @@ Takes in encrypted BOSS used for the 3DS data and decrypts it. This function is 
 
 ### Signature
 ```ts
-function encrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffer, options: CTRCryptoOptions): Buffer
+function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, options: CTRCryptoOptions[]): Buffer
 ```
 
-Takes in content and encrypts it for the 3DS using the provided options
+Takes in multiple contents and encrypts them for the 3DS using the provided options and serial number
 
 ### Arguments
-- `pathOrBuffer`: Either a string path to the file or a buffer containing the raw data
 - `aesKey`: BOSS AES encryption key
-- `options`: `CTRCryptoOptions`
+- `serialNumber`: Serial number used in the BOSS container
+- `options`: Array of `CTRCryptoOptions`
 
 ### Returns:
 3DS encrypted BOSS data

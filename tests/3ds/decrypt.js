@@ -7,10 +7,11 @@ const { BOSS_3DS_AES_KEY } = process.env;
 
 const expected = {
 	hash_type: 2,
-	release_date: 1692231927n,
+	serial_number: 1692231927n,
 	iv: Buffer.from('00000000000000000000000000000001', 'hex'),
 	content_header_hash: Buffer.from('5cd5d8198b7ce64edc796c147f333a76c3714269066504c9232f28cabe4306db', 'hex'),
 	content_header_hash_signature: Buffer.from('00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'hex'),
+	payload_contents_length: 1,
 	payload_content_header_hash: Buffer.from('e3403f8fcd420e9fa3e8524779edfa5b08ba316be5d377e42e71e6cdcdf03207', 'hex'),
 	payload_content_header_hash_signature: Buffer.from('00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'hex'),
 	program_id: 11542673336828928n,
@@ -68,13 +69,17 @@ const encrypted = Buffer.from([
 const decrypted = decrypt3DS(encrypted, BOSS_3DS_AES_KEY);
 
 assert.equal(decrypted.hash_type, expected.hash_type, `Decrypted hash type does not match. Expected ${expected.hash_type}. Got ${decrypted.hash_type}`);
-assert.equal(decrypted.release_date, expected.release_date, `Decrypted release date does not match. Expected ${expected.release_date}. Got ${decrypted.release_date}`);
+assert.equal(decrypted.serial_number, expected.serial_number, `Decrypted serial number does not match. Expected ${expected.serial_number}. Got ${decrypted.serial_number}`);
 assert.ok(expected.iv.equals(decrypted.iv), `Invalid IV. Expected\n\n${expected.iv.toString('hex')}\n\nGot\n\n${decrypted.iv.toString('hex')}`);
 assert.ok(expected.content_header_hash.equals(decrypted.content_header_hash), `Invalid content header hash. Expected\n\n${expected.content_header_hash.toString('hex')}\n\nGot\n\n${decrypted.content_header_hash.toString('hex')}`);
 assert.ok(expected.content_header_hash_signature.equals(decrypted.content_header_hash_signature), `Invalid content header hash signature. Expected\n\n${expected.content_header_hash_signature.toString('hex')}\n\nGot\n\n${decrypted.content_header_hash_signature.toString('hex')}`);
-assert.ok(expected.payload_content_header_hash.equals(decrypted.payload_content_header_hash), `Invalid payload header hash. Expected\n\n${expected.payload_content_header_hash.toString('hex')}\n\nGot\n\n${decrypted.payload_content_header_hash.toString('hex')}`);
-assert.ok(expected.payload_content_header_hash_signature.equals(decrypted.payload_content_header_hash_signature), `Invalid payload header hash signature. Expected\n\n${expected.payload_content_header_hash_signature.toString('hex')}\n\nGot\n\n${decrypted.payload_content_header_hash_signature.toString('hex')}`);
-assert.equal(decrypted.program_id, expected.program_id, `Decrypted program (title) ID does not match. Expected ${expected.program_id}. Got ${decrypted.program_id}`);
-assert.equal(decrypted.content_datatype, expected.content_datatype, `Decrypted data type does not match. Expected ${expected.content_datatype}. Got ${decrypted.content_datatype}`);
-assert.equal(decrypted.ns_data_id, expected.ns_data_id, `Decrypted NS data ID does not match. Expected ${expected.ns_data_id}. Got ${decrypted.ns_data_id}`);
-assert.ok(expected.content.equals(decrypted.content), `Invalid decrypted content. Expected\n\n${expected.content.toString('hex')}\n\nGot\n\n${decrypted.content.toString('hex')}`);
+assert.equal(decrypted.payload_contents.length, expected.payload_contents_length, `Invalid payload contents length. Expected\n\n${expected.payload_contents_length}\n\nGot\n\n${decrypted.payload_contents.length}`);
+
+const payload = decrypted.payload_contents[0];
+
+assert.ok(expected.payload_content_header_hash.equals(payload.payload_content_header_hash), `Invalid payload header hash. Expected\n\n${expected.payload_content_header_hash.toString('hex')}\n\nGot\n\n${payload.payload_content_header_hash.toString('hex')}`);
+assert.ok(expected.payload_content_header_hash_signature.equals(payload.payload_content_header_hash_signature), `Invalid payload header hash signature. Expected\n\n${expected.payload_content_header_hash_signature.toString('hex')}\n\nGot\n\n${payload.payload_content_header_hash_signature.toString('hex')}`);
+assert.equal(payload.program_id, expected.program_id, `Decrypted program (title) ID does not match. Expected ${expected.program_id}. Got ${payload.program_id}`);
+assert.equal(payload.content_datatype, expected.content_datatype, `Decrypted data type does not match. Expected ${expected.content_datatype}. Got ${payload.content_datatype}`);
+assert.equal(payload.ns_data_id, expected.ns_data_id, `Decrypted NS data ID does not match. Expected ${expected.ns_data_id}. Got ${payload.ns_data_id}`);
+assert.ok(expected.content.equals(payload.content), `Invalid decrypted content. Expected\n\n${expected.content.toString('hex')}\n\nGot\n\n${payload.content.toString('hex')}`);
