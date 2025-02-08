@@ -100,7 +100,7 @@ export function decrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffe
 	for (let i = 0; i < payloadsCount; i++) {
 		// * Parse the payload content header
 		const payloadContentHeader = payloadContents.subarray(payloadContentsOffset, payloadContentsOffset + 0x13C);
-		const programID = payloadContentHeader.readBigUInt64LE(); // * This is the app title ID, the wiki calls it the "program ID"
+		const programID = payloadContentHeader.readBigUInt64BE(); // * This is the app title ID, the wiki calls it the "program ID"
 		const contentDataType = payloadContentHeader.readUInt32BE(0xC);
 		const contentLength = payloadContentHeader.readUInt32BE(0x10);
 		const nsDataID = payloadContentHeader.readUInt32BE(0x14);
