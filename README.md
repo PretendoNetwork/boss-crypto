@@ -128,7 +128,7 @@ Returned when decrypting 3DS BOSS content. Contains all relevant data from the r
 ```ts
 type CTRBOSSContainer = {
 	hash_type: number;
-	release_date: bigint;
+	serial_number: bigint;
 	iv: Buffer;
 	content_header_hash: Buffer;
 	content_header_hash_signature: Buffer;
@@ -137,13 +137,13 @@ type CTRBOSSContainer = {
 ```
 
 ### CTRCryptoOptions
-Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `release_date` is only needed when calling `encrypt`. `content` is only needed when calling `encrypt3DS`.
+Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `serial_number` is only needed when calling `encrypt`. `content` is only needed when calling `encrypt3DS`.
 
 ```ts
 type CTRCryptoOptions = {
 	program_id?: string | number | bigint;
 	title_id?: string | number | bigint;
-	release_date?: bigint;
+	serial_number?: bigint;
 	content_datatype: number;
 	ns_data_id: number;
 	version: number;
