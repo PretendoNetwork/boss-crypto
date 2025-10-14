@@ -137,7 +137,7 @@ type CTRBOSSContainer = {
 ```
 
 ### CTRCryptoOptions
-Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `serial_number` is only needed when calling `encrypt`. `content` is only needed when calling `encrypt3DS`.
+Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `serial_number` is only needed when calling `encrypt`. `content` is only needed when calling `encrypt3DS`
 
 ```ts
 type CTRCryptoOptions = {
@@ -249,7 +249,7 @@ Takes in multiple contents and encrypts them for the 3DS using the provided opti
 
 ### Arguments
 - `aesKey`: BOSS AES encryption key
-- `serialNumber`: Serial number used in the BOSS container
+- `serialNumber`: Serial number used in the BOSS container. This is a unique identifier of the container, similar to the data ID on the Wii U (not to be confused with the NS Data ID, which is assigned per payload content)
 - `options`: Array of `CTRCryptoOptions`
 
 ### Returns:

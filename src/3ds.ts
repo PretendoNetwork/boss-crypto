@@ -13,7 +13,7 @@ export type CTRPayloadContent = {
 
 export type CTRBOSSContainer = {
 	hash_type: number;
-	serial_number: bigint;
+	serial_number: bigint; // * Identifier of the container
 	iv: Buffer;
 	content_header_hash: Buffer;
 	content_header_hash_signature: Buffer;
@@ -23,7 +23,7 @@ export type CTRBOSSContainer = {
 export type CTRCryptoOptions = {
 	program_id?: string | number | bigint; // * Program ID and title ID are aliases
 	title_id?: string | number | bigint;   // * Program ID and title ID are aliases
-	serial_number?: bigint; // * Only used in boss.encrypt()
+	serial_number?: bigint; // * Identifier of the container. Only used in boss.encrypt()
 	content_datatype: number;
 	ns_data_id: number;
 	version: number;
