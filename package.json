@@ -1,6 +1,6 @@
 {
   "name": "@pretendonetwork/boss-crypto",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "TypeScript crypto functions for creating and working with WiiU and 3DS BOSS files",
   "main": "dist/boss.js",
   "scripts": {
