@@ -1,6 +1,12 @@
 import crypto from 'node:crypto';
 import { md5, getDataFromPathOrBuffer } from '@/util';
 
+export const CTR_BOSS_FLAGS = {
+	MARK_ARRIVED_PRIVILEGED: 1n << 0n
+} as const;
+
+export type CTRBOSSFlag = (typeof CTR_BOSS_FLAGS)[keyof typeof CTR_BOSS_FLAGS];
+
 export type CTRPayloadContent = {
 	payload_content_header_hash: Buffer;
 	payload_content_header_hash_signature: Buffer;
@@ -15,6 +21,7 @@ export type CTRBOSSContainer = {
 	hash_type: number;
 	serial_number: bigint; // * Identifier of the container
 	iv: Buffer;
+	flags: CTRBOSSFlag;
 	content_header_hash: Buffer;
 	content_header_hash_signature: Buffer;
 	payload_contents: CTRPayloadContent[];
@@ -24,6 +31,7 @@ export type CTRCryptoOptions = {
 	program_id?: string | number | bigint; // * Program ID and title ID are aliases
 	title_id?: string | number | bigint;   // * Program ID and title ID are aliases
 	serial_number?: bigint; // * Identifier of the container. Only used in boss.encrypt()
+	flags?: CTRBOSSFlag; // * Only used in boss.encrypt()
 	content_datatype: number;
 	ns_data_id: number;
 	version: number;
@@ -34,8 +42,6 @@ const BOSS_CTR_VER = 0x10001;
 
 // Not providing the key
 const BOSS_AES_KEY_HASH = Buffer.from('86fbc2bb4cb703b2a4c6cc9961319926', 'hex');
-
-const CONTENT_HEADER_MAGIC = Buffer.from('80000000000000000000000000000000', 'hex');
 
 function verifyKey(aesKey: Buffer): void {
 	if (!BOSS_AES_KEY_HASH.equals(md5(aesKey))) {
@@ -75,9 +81,11 @@ export function decrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffe
 	const contentHeader = decryptedContent.subarray(0, 0x132);
 	const contentHeaderMagic = contentHeader.subarray(0, 0x10);
 
-	if (!contentHeaderMagic.equals(CONTENT_HEADER_MAGIC)) {
-		console.log(contentHeaderMagic.toString('hex'));
-		//throw new Error('Failed to decrypt. Missing content header magic');
+	let flags: CTRBOSSFlag = 0n;
+
+	// * Reverse the flag logic for clarity
+	if (!(contentHeaderMagic[0] & 0x80)) {
+		flags |= CTR_BOSS_FLAGS.MARK_ARRIVED_PRIVILEGED;
 	}
 
 	const payloadsCount = contentHeader.readUInt16BE(0x10);
@@ -144,13 +152,14 @@ export function decrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffe
 		hash_type: hashType,
 		serial_number: serialNumber,
 		iv: IV,
+		flags: flags,
 		content_header_hash: contentHeaderHash,
 		content_header_hash_signature: contentHeaderHashSignature,
 		payload_contents: payloads,
 	};
 }
 
-export function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, options: CTRCryptoOptions[]): Buffer {
+export function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, options: CTRCryptoOptions[], flags?: CTRBOSSFlag): Buffer {
 	if (typeof aesKey === 'string') {
 		aesKey = Buffer.from(aesKey, 'hex');
 	}
@@ -213,7 +222,11 @@ export function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, option
 
 	let contentHeader = Buffer.alloc(0x12);
 
-	CONTENT_HEADER_MAGIC.copy(contentHeader, 0);
+	// * Reverse the flag logic for clarity
+	if (!flags || !(flags & CTR_BOSS_FLAGS.MARK_ARRIVED_PRIVILEGED)) {
+		contentHeader[0] |= 0x80;
+	}
+
 	contentHeader.writeUInt16BE(payloadCount, 0x10); // * Payload contents count
 
 	const contentHeaderHashedData = Buffer.concat([

@@ -93,7 +93,6 @@ fs.writeFileSync(__dirname + '/EU_BGM1.dec', payload_contents[0].content);
 ## Types
 
 ### WUPBOSSInfo
-
 Returned when decrypting WiiU BOSS content. Contains some crypto information from the headers
 
 _**THIS TYPE IS <ins>NOT</ins> PART OF THE REAL BOSS SPEC. IT IS MADE FOR THIS LIBRARY ONLY**_
@@ -106,6 +105,11 @@ type WUPBOSSInfo = {
 	content: Buffer;
 }
 ```
+
+### CTRBOSSFlag
+Holds flags representing additional information of a 3DS BOSS container
+
+- `CTR_BOSS_FLAGS.MARK_ARRIVED_PRIVILEGED`: If set, the titles which are targeted in the payload contents will only be notified of the arrival of new data if they are privileged titles. For example, this is used by regular titles downloading notification tasks which aren't targeted to the title itself, but to the notifications sysmodule
 
 ### CTRPayloadContent
 Holds the contents of one of the payloads of a 3DS BOSS container
@@ -130,6 +134,7 @@ type CTRBOSSContainer = {
 	hash_type: number;
 	serial_number: bigint;
 	iv: Buffer;
+	flags: CTRBOSSFlag;
 	content_header_hash: Buffer;
 	content_header_hash_signature: Buffer;
 	payload_contents: CTRPayloadContent[];
@@ -137,13 +142,14 @@ type CTRBOSSContainer = {
 ```
 
 ### CTRCryptoOptions
-Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `serial_number` is only needed when calling `encrypt`. `content` is only needed when calling `encrypt3DS`
+Passed in when encrypting 3DS contents. `program_id` and `title_id` are aliases, one must be set. `serial_number` and `flags` are only needed when calling `encrypt`. `content` is only needed when calling `encrypt3DS`
 
 ```ts
 type CTRCryptoOptions = {
 	program_id?: string | number | bigint;
 	title_id?: string | number | bigint;
 	serial_number?: bigint;
+	flags?: CTRBOSSFlag;
 	content_datatype: number;
 	ns_data_id: number;
 	version: number;
@@ -242,7 +248,7 @@ Takes in encrypted BOSS used for the 3DS data and decrypts it. This function is 
 
 ### Signature
 ```ts
-function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, options: CTRCryptoOptions[]): Buffer
+function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, options: CTRCryptoOptions[], flags?: CTRBOSSFlag): Buffer
 ```
 
 Takes in multiple contents and encrypts them for the 3DS using the provided options and serial number
@@ -251,6 +257,7 @@ Takes in multiple contents and encrypts them for the 3DS using the provided opti
 - `aesKey`: BOSS AES encryption key
 - `serialNumber`: Serial number used in the BOSS container. This is a unique identifier of the container, similar to the data ID on the Wii U (not to be confused with the NS Data ID, which is assigned per payload content)
 - `options`: Array of `CTRCryptoOptions`
+- `flags`: Container flags `CTRBOSSFlag`
 
 ### Returns:
 3DS encrypted BOSS data
