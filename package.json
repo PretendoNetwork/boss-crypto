@@ -1,19 +1,23 @@
 {
   "name": "@pretendonetwork/boss-crypto",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "TypeScript crypto functions for creating and working with WiiU and 3DS BOSS files",
   "main": "dist/boss.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PretendoNetwork/boss-crypto.git"
+  },
   "scripts": {
     "lint": "npx eslint .",
-	"build": "npm run lint && npm run clean && npx tsc && npx tsc-alias",
-	"clean": "rimraf ./dist",
-	"test": "npm run test-wiiu && npm run test-3ds",
-	"test-wiiu": "npm run test-wiiu-encrypt && npm run test-wiiu-decrypt",
-	"test-wiiu-encrypt": "NODE_ENV=test node ./tests/wiiu/encrypt.js",
-	"test-wiiu-decrypt": "NODE_ENV=test node ./tests/wiiu/decrypt.js",
-	"test-3ds": "npm run test-3ds-encrypt && npm run test-3ds-decrypt",
-	"test-3ds-encrypt": "NODE_ENV=test node ./tests/3ds/encrypt.js",
-	"test-3ds-decrypt": "NODE_ENV=test node ./tests/3ds/decrypt.js"
+    "build": "npm run lint && npm run clean && npx tsc && npx tsc-alias",
+    "clean": "rimraf ./dist",
+    "test": "npm run test-wiiu && npm run test-3ds",
+    "test-wiiu": "npm run test-wiiu-encrypt && npm run test-wiiu-decrypt",
+    "test-wiiu-encrypt": "NODE_ENV=test node ./tests/wiiu/encrypt.js",
+    "test-wiiu-decrypt": "NODE_ENV=test node ./tests/wiiu/decrypt.js",
+    "test-3ds": "npm run test-3ds-encrypt && npm run test-3ds-decrypt",
+    "test-3ds-encrypt": "NODE_ENV=test node ./tests/3ds/encrypt.js",
+    "test-3ds-decrypt": "NODE_ENV=test node ./tests/3ds/decrypt.js"
   },
   "keywords": [],
   "author": "",

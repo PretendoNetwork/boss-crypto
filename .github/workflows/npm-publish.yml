@@ -1,28 +1,33 @@
 name: Publish to NPM
 on:
-    release:
-        types: [created]
+  push:
+    branches:
+      - master
+
+permissions:
+  id-token: write # Required for Trusted Publishing
+  contents: read
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        env:
-            NODE_ENV: ci
-            BOSS_3DS_AES_KEY: ${{ secrets.BOSS_3DS_AES_KEY }}
-            BOSS_WIIU_AES_KEY: ${{ secrets.BOSS_WIIU_AES_KEY }}
-            BOSS_WIIU_HMAC_KEY: ${{ secrets.BOSS_WIIU_HMAC_KEY }}
-        steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
-              with:
-                node-version: 18
-                registry-url: 'https://registry.npmjs.org'
-            - name: Building
-              run: |
-               npm ci
-               npm run build
-            - name: Testing
-              run: npm test
-            - name: Publishing
-              run: npm publish --access public
-              env:
-                NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BOSS_3DS_AES_KEY: ${{ secrets.BOSS_3DS_AES_KEY }}
+      BOSS_WIIU_AES_KEY: ${{ secrets.BOSS_WIIU_AES_KEY }}
+      BOSS_WIIU_HMAC_KEY: ${{ secrets.BOSS_WIIU_HMAC_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+      - name: Update NPM
+        run: npm install -g npm@latest
+      - name: Building
+        run: |
+          npm ci
+          npm run build
+      - name: Testing
+        run: npm test
+      - name: Publishing
+        run: npm publish
