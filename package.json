@@ -1,6 +1,6 @@
 {
   "name": "@pretendonetwork/boss-crypto",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "TypeScript crypto functions for creating and working with WiiU and 3DS BOSS files",
   "main": "dist/boss.js",
   "repository": {
@@ -19,9 +19,7 @@
     "test-3ds-encrypt": "NODE_ENV=test node ./tests/3ds/encrypt.js",
     "test-3ds-decrypt": "NODE_ENV=test node ./tests/3ds/decrypt.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "license": "LGPL-3.0-only",
   "devDependencies": {
     "@types/node": "^20.5.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
