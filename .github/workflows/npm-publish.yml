@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - master
+    paths:
+      - "src/**"
+      - "package.json"
+      - ".github/workflows/npm-publish.yml"
 
 permissions:
   id-token: write # Required for Trusted Publishing
