@@ -9,12 +9,13 @@ const expected = {
 	hash_type: 2,
 	serial_number: 1692231927n,
 	iv: Buffer.from('00000000000000000000000000000001', 'hex'),
+	flags: 0n,
 	content_header_hash: Buffer.from('5cd5d8198b7ce64edc796c147f333a76c3714269066504c9232f28cabe4306db', 'hex'),
 	content_header_hash_signature: Buffer.from('00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'hex'),
 	payload_contents_length: 1,
 	payload_content_header_hash: Buffer.from('e3403f8fcd420e9fa3e8524779edfa5b08ba316be5d377e42e71e6cdcdf03207', 'hex'),
 	payload_content_header_hash_signature: Buffer.from('00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 'hex'),
-	program_id: 11542673336828928n,
+	program_id: 1125968626460928n,
 	content_datatype: 65537,
 	ns_data_id: 36,
 	content: Buffer.from('48656c6c6f20576f726c64', 'hex')
@@ -71,6 +72,7 @@ const decrypted = decrypt3DS(encrypted, BOSS_3DS_AES_KEY);
 assert.equal(decrypted.hash_type, expected.hash_type, `Decrypted hash type does not match. Expected ${expected.hash_type}. Got ${decrypted.hash_type}`);
 assert.equal(decrypted.serial_number, expected.serial_number, `Decrypted serial number does not match. Expected ${expected.serial_number}. Got ${decrypted.serial_number}`);
 assert.ok(expected.iv.equals(decrypted.iv), `Invalid IV. Expected\n\n${expected.iv.toString('hex')}\n\nGot\n\n${decrypted.iv.toString('hex')}`);
+assert.equal(decrypted.flags, expected.flags, `Invalid flags. Expected\n\n${expected.flags}\n\nGot\n\n${decrypted.flags}`);
 assert.ok(expected.content_header_hash.equals(decrypted.content_header_hash), `Invalid content header hash. Expected\n\n${expected.content_header_hash.toString('hex')}\n\nGot\n\n${decrypted.content_header_hash.toString('hex')}`);
 assert.ok(expected.content_header_hash_signature.equals(decrypted.content_header_hash_signature), `Invalid content header hash signature. Expected\n\n${expected.content_header_hash_signature.toString('hex')}\n\nGot\n\n${decrypted.content_header_hash_signature.toString('hex')}`);
 assert.equal(decrypted.payload_contents.length, expected.payload_contents_length, `Invalid payload contents length. Expected\n\n${expected.payload_contents_length}\n\nGot\n\n${decrypted.payload_contents.length}`);

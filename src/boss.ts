@@ -30,7 +30,7 @@ export function encrypt(pathOrBuffer: string | Buffer, version: number, aesKey: 
 		}
 
 		hmacKeyOrOptions.content = data;
-		return encrypt3DS(aesKey, hmacKeyOrOptions.serial_number, [hmacKeyOrOptions]);
+		return encrypt3DS(aesKey, hmacKeyOrOptions.serial_number, [hmacKeyOrOptions], hmacKeyOrOptions.flags);
 	} else {
 		throw new Error('Unknown version');
 	}
