@@ -1,6 +1,6 @@
 import { getDataFromPathOrBuffer } from '@/util';
 import { decryptWiiU, encryptWiiU, WUPBOSSInfo } from '@/wiiu';
-import { decrypt3DS, encrypt3DS, CTRBOSSContainer, CTRCryptoOptions } from '@/3ds';
+import { decrypt3DS, encrypt3DS, CTRBOSSContainer, CTRCryptoOptions, CTR_BOSS_FLAGS } from '@/3ds';
 
 const BOSS_MAGIC = Buffer.from('boss');
 const BOSS_CTR_VER = 0x10001;
@@ -10,6 +10,7 @@ export { decryptWiiU as decryptWiiU };
 export { encryptWiiU as encryptWiiU };
 export { decrypt3DS as decrypt3DS };
 export { encrypt3DS as encrypt3DS };
+export { CTR_BOSS_FLAGS as CTR_BOSS_FLAGS };
 
 export function encrypt(pathOrBuffer: string | Buffer, version: number, aesKey: string, hmacKeyOrOptions: string | CTRCryptoOptions): Buffer {
 	const data = getDataFromPathOrBuffer(pathOrBuffer);
