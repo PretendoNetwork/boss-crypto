@@ -1,6 +1,8 @@
 import { getDataFromPathOrBuffer } from '@/util';
-import { decryptWiiU, encryptWiiU, WUPBOSSInfo } from '@/wiiu';
-import { decrypt3DS, encrypt3DS, CTRBOSSContainer, CTRCryptoOptions, CTR_BOSS_FLAGS } from '@/3ds';
+import { decryptWiiU, encryptWiiU } from '@/wiiu';
+import { decrypt3DS, encrypt3DS, CTR_BOSS_FLAGS } from '@/3ds';
+import type { WUPBOSSInfo } from '@/wiiu';
+import type { CTRCryptoOptions, CTRBOSSContainer } from '@/3ds';
 
 const BOSS_MAGIC = Buffer.from('boss');
 const BOSS_CTR_VER = 0x10001;

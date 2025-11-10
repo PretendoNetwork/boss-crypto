@@ -6,7 +6,7 @@ export type WUPBOSSInfo = {
 	iv: Buffer;
 	hmac: Buffer;
 	content: Buffer;
-}
+};
 
 const BOSS_WUP_VER = 0x20001;
 

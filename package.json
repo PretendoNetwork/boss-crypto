@@ -8,8 +8,9 @@
     "url": "git+https://github.com/PretendoNetwork/boss-crypto.git"
   },
   "scripts": {
-    "lint": "npx eslint .",
-    "build": "tsup",
+    "lint": "eslint ./src",
+    "lint:fix": "eslint ./src --fix",
+    "build": "tsup && tsc --noEmit",
     "test": "npm run test-wiiu && npm run test-3ds",
     "test-wiiu": "npm run test-wiiu-encrypt && npm run test-wiiu-decrypt",
     "test-wiiu-encrypt": "NODE_ENV=test node ./tests/wiiu/encrypt.js",
@@ -20,12 +21,11 @@
   },
   "license": "LGPL-3.0-only",
   "devDependencies": {
+    "@pretendonetwork/eslint-config": "^0.1.3",
     "@types/node": "^20.5.0",
-    "@typescript-eslint/eslint-plugin": "^6.4.0",
-    "@typescript-eslint/parser": "^6.4.0",
     "dotenv": "^8.2.0",
-    "eslint": "^7.32.0",
-    "tsup": "^8.5.0"
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
   },
   "exports": {
     ".": {
