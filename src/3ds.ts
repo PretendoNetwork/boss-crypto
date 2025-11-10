@@ -269,8 +269,3 @@ export function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, option
 		header, encrypted
 	]);
 }
-
-module.exports = {
-	decrypt3DS,
-	encrypt3DS
-};

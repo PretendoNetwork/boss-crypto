@@ -10,7 +10,7 @@ export type WUPBOSSInfo = {
 
 const BOSS_WUP_VER = 0x20001;
 
-// Not providing the keys
+// * Not providing the keys
 const BOSS_AES_KEY_HASH = Buffer.from('5202ce5099232c3d365e28379790a919', 'hex');
 const BOSS_HMAC_KEY_HASH = Buffer.from('b4482fef177b0100090ce0dbeb8ce977', 'hex');
 
