@@ -62,6 +62,3 @@ dist
 
 # act GitHub Actions tester
 .secrets
-
-# Jons private tests
-test

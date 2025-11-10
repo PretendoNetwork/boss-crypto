@@ -11,13 +11,7 @@
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
     "build": "tsup && tsc --noEmit",
-    "test": "npm run test-wiiu && npm run test-3ds",
-    "test-wiiu": "npm run test-wiiu-encrypt && npm run test-wiiu-decrypt",
-    "test-wiiu-encrypt": "NODE_ENV=test node ./tests/wiiu/encrypt.js",
-    "test-wiiu-decrypt": "NODE_ENV=test node ./tests/wiiu/decrypt.js",
-    "test-3ds": "npm run test-3ds-encrypt && npm run test-3ds-decrypt",
-    "test-3ds-encrypt": "NODE_ENV=test node ./tests/3ds/encrypt.js",
-    "test-3ds-decrypt": "NODE_ENV=test node ./tests/3ds/decrypt.js"
+    "test": "npx vitest run"
   },
   "license": "LGPL-3.0-only",
   "devDependencies": {
@@ -25,7 +19,9 @@
     "@types/node": "^20.5.0",
     "dotenv": "^8.2.0",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2",
+    "vitest": "^4.0.8"
   },
   "exports": {
     ".": {
