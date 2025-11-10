@@ -246,7 +246,8 @@ export function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, option
 		payloadContents
 	]);
 
-	const IV = process.env.NODE_ENV === 'test' ? Buffer.alloc(12) : crypto.randomBytes(12);
+	// * vitest sets this to 'test', CICD testing sets this to 'ci'
+	const IV = (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'ci') ? Buffer.alloc(12) : crypto.randomBytes(12);
 
 	// * Main BOSS file
 	const header = Buffer.alloc(0x28);
