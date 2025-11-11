@@ -1,6 +1,6 @@
 {
   "name": "@pretendonetwork/boss-crypto",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "TypeScript crypto functions for creating and working with WiiU and 3DS BOSS files",
   "type": "module",
   "repository": {
@@ -25,17 +25,17 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/boss.d.cts",
+      "types": "./dist/boss.d.ts",
       "import": "./dist/boss.js",
       "require": "./dist/boss.cjs"
     },
     "./3ds": {
-      "types": "./dist/3ds.d.cts",
+      "types": "./dist/3ds.d.ts",
       "import": "./dist/3ds.js",
       "require": "./dist/3ds.cjs"
     },
     "./wiiu": {
-      "types": "./dist/wiiu.d.cts",
+      "types": "./dist/wiiu.d.ts",
       "import": "./dist/wiiu.js",
       "require": "./dist/wiiu.cjs"
     }
