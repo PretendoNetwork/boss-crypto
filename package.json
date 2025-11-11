@@ -1,31 +1,43 @@
 {
   "name": "@pretendonetwork/boss-crypto",
-  "version": "1.1.3",
+  "version": "1.2.0",
   "description": "TypeScript crypto functions for creating and working with WiiU and 3DS BOSS files",
-  "main": "dist/boss.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PretendoNetwork/boss-crypto.git"
   },
   "scripts": {
-    "lint": "npx eslint .",
-    "build": "npm run lint && npm run clean && npx tsc && npx tsc-alias",
-    "clean": "rimraf ./dist",
-    "test": "npm run test-wiiu && npm run test-3ds",
-    "test-wiiu": "npm run test-wiiu-encrypt && npm run test-wiiu-decrypt",
-    "test-wiiu-encrypt": "NODE_ENV=test node ./tests/wiiu/encrypt.js",
-    "test-wiiu-decrypt": "NODE_ENV=test node ./tests/wiiu/decrypt.js",
-    "test-3ds": "npm run test-3ds-encrypt && npm run test-3ds-decrypt",
-    "test-3ds-encrypt": "NODE_ENV=test node ./tests/3ds/encrypt.js",
-    "test-3ds-decrypt": "NODE_ENV=test node ./tests/3ds/decrypt.js"
+    "lint": "eslint ./src",
+    "lint:fix": "eslint ./src --fix",
+    "build": "tsup && tsc --noEmit",
+    "test": "npx vitest run"
   },
   "license": "LGPL-3.0-only",
   "devDependencies": {
+    "@pretendonetwork/eslint-config": "^0.1.3",
     "@types/node": "^20.5.0",
-    "@typescript-eslint/eslint-plugin": "^6.4.0",
-    "@typescript-eslint/parser": "^6.4.0",
     "dotenv": "^8.2.0",
-    "eslint": "^7.32.0",
-    "tsc-alias": "^1.8.7"
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2",
+    "vitest": "^4.0.8"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/boss.d.cts",
+      "import": "./dist/boss.js",
+      "require": "./dist/boss.cjs"
+    },
+    "./3ds": {
+      "types": "./dist/3ds.d.cts",
+      "import": "./dist/3ds.js",
+      "require": "./dist/3ds.cjs"
+    },
+    "./wiiu": {
+      "types": "./dist/wiiu.d.cts",
+      "import": "./dist/wiiu.js",
+      "require": "./dist/wiiu.cjs"
+    }
   }
 }

@@ -15,7 +15,7 @@ export type CTRPayloadContent = {
 	ns_data_id: number;
 	version: number;
 	content: Buffer;
-}
+};
 
 export type CTRBOSSContainer = {
 	hash_type: number;
@@ -25,22 +25,22 @@ export type CTRBOSSContainer = {
 	content_header_hash: Buffer;
 	content_header_hash_signature: Buffer;
 	payload_contents: CTRPayloadContent[];
-}
+};
 
 export type CTRCryptoOptions = {
 	program_id?: string | number | bigint; // * Program ID and title ID are aliases
-	title_id?: string | number | bigint;   // * Program ID and title ID are aliases
+	title_id?: string | number | bigint; // * Program ID and title ID are aliases
 	serial_number?: bigint; // * Identifier of the container. Only used in boss.encrypt()
 	flags?: CTRBOSSFlag; // * Only used in boss.encrypt()
 	content_datatype: number;
 	ns_data_id: number;
 	version: number;
 	content?: string | Buffer; // * Not needed in boss.encrypt()
-}
+};
 
 const BOSS_CTR_VER = 0x10001;
 
-// Not providing the key
+// * Not providing the key
 const BOSS_AES_KEY_HASH = Buffer.from('86fbc2bb4cb703b2a4c6cc9961319926', 'hex');
 
 function verifyKey(aesKey: Buffer): void {
@@ -155,7 +155,7 @@ export function decrypt3DS(pathOrBuffer: string | Buffer, aesKey: string | Buffe
 		flags: flags,
 		content_header_hash: contentHeaderHash,
 		content_header_hash_signature: contentHeaderHashSignature,
-		payload_contents: payloads,
+		payload_contents: payloads
 	};
 }
 
@@ -246,7 +246,8 @@ export function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, option
 		payloadContents
 	]);
 
-	const IV = process.env.NODE_ENV === 'test' ? Buffer.alloc(12) : crypto.randomBytes(12);
+	// * vitest sets this to 'test', CICD testing sets this to 'ci'
+	const IV = (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'ci') ? Buffer.alloc(12) : crypto.randomBytes(12);
 
 	// * Main BOSS file
 	const header = Buffer.alloc(0x28);
@@ -269,8 +270,3 @@ export function encrypt3DS(aesKey: string | Buffer, serialNumber: bigint, option
 		header, encrypted
 	]);
 }
-
-module.exports = {
-	decrypt3DS,
-	encrypt3DS
-};

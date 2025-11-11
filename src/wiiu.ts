@@ -6,11 +6,11 @@ export type WUPBOSSInfo = {
 	iv: Buffer;
 	hmac: Buffer;
 	content: Buffer;
-}
+};
 
 const BOSS_WUP_VER = 0x20001;
 
-// Not providing the keys
+// * Not providing the keys
 const BOSS_AES_KEY_HASH = Buffer.from('5202ce5099232c3d365e28379790a919', 'hex');
 const BOSS_HMAC_KEY_HASH = Buffer.from('b4482fef177b0100090ce0dbeb8ce977', 'hex');
 
@@ -74,7 +74,8 @@ export function encryptWiiU(pathOrBuffer: string | Buffer, aesKey: string, hmacK
 
 	const decrypted = Buffer.concat([hmac, content]);
 
-	const IV = process.env.NODE_ENV === 'test' ? Buffer.alloc(12) : crypto.randomBytes(12);
+	// * vitest sets this to 'test', CICD testing sets this to 'ci'
+	const IV = (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'ci') ? Buffer.alloc(12) : crypto.randomBytes(12);
 
 	const cipher = crypto.createCipheriv('aes-128-ctr', aesKey, Buffer.concat([IV, Buffer.from('\x00\x00\x00\x01')]));
 
